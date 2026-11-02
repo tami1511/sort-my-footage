@@ -1,4 +1,4 @@
-<#
+﻿<#
   Sort My Footage - installer for Windows 10/11.
   Run it by double-clicking Install.bat. Safe to run again: it only adds what is missing.
 
@@ -111,8 +111,8 @@ if ($claude) {
 Say "4. Copying the skill"
 $skillDir = Join-Path $env:USERPROFILE '.claude\skills\sort-my-footage'
 New-Item -ItemType Directory -Force -Path (Join-Path $skillDir 'scripts') | Out-Null
-Copy-Item (Join-Path $here 'skill\SKILL.md') $skillDir -Force
-Copy-Item (Join-Path $here 'skill\scripts\*') (Join-Path $skillDir 'scripts') -Force
+Copy-Item (Join-Path $here 'sort-my-footage\SKILL.md') $skillDir -Force
+Copy-Item (Join-Path $here 'sort-my-footage\scripts\*') (Join-Path $skillDir 'scripts') -Force
 Say "  OK  $skillDir" 'Green'
 
 # 5. Desktop folder and launcher
