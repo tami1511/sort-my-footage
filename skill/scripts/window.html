@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sort My Footage</title>
+<style>
+  :root {
+    --paper: #FAF8F4;
+    --paper-2: #F1EBE2;
+    --card: #ffffff;
+    --ink: #1A1A1A;
+    --muted: #7d7166;
+    --rose: #9c7240;
+    --rose-soft: #F1E4D1;
+    --line: #E8DFD2;
+    --shadow: 0 1px 2px rgba(60,40,30,.06), 0 8px 24px rgba(60,40,30,.07);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 14px/1.45 "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  header { padding: 22px 28px 10px; display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+  .kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .kicker b { color: var(--rose); font-weight: 600; }
+  h1 { font: 500 34px/1.05 Fraunces, Georgia, serif; margin: 4px 0 0; }
+  h1 em { color: var(--rose); }
+  .pill {
+    margin-left: auto; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 999px; background: rgba(43,37,35,.75); color: #fff;
+    opacity: 0; transform: translateY(4px); transition: .4s;
+  }
+  .pill.on { opacity: 1; transform: none; }
+
+  .controls {
+    margin: 6px 28px 14px; padding: 12px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 1fr auto; gap: 10px 14px; align-items: center;
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
+  .label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; width: 62px; flex: none; }
+  input[type=text] {
+    flex: 1; min-width: 160px; border: 1px solid var(--line); background: #fff; border-radius: 9px;
+    padding: 8px 10px; font: inherit; color: var(--ink); outline: none;
+  }
+  input[type=text]:focus { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
+  button {
+    font: 500 13px "Atkinson Hyperlegible", "Segoe UI", sans-serif; border: 1px solid var(--line); background: #fff;
+    color: var(--ink); border-radius: 9px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
+    transition: background .15s, transform .1s;
+  }
+  button:hover { background: var(--paper); }
+  button:active { transform: scale(.97); }
+  button:disabled { opacity: .45; cursor: default; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; flex: none; }
+  .seg button { border: 0; border-radius: 0; padding: 8px 12px; background: #fff; color: var(--muted); }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--rose); color: #fff; font-weight: 600; }
+  .go {
+    background: var(--rose); border-color: var(--rose); color: #fff; font-weight: 600;
+    padding: 12px 26px; font-size: 15px; border-radius: 11px; display: flex; gap: 8px; align-items: center;
+  }
+  .go:hover { background: #845f33; }
+  .side { display: flex; gap: 8px; grid-row: span 2; align-items: center; }
+
+  .banner {
+    display: none; margin: 0 28px 12px; padding: 10px 14px; border-radius: 11px;
+    background: var(--rose-soft); color: #5e4423; align-items: center; gap: 12px;
+  }
+  .banner.on { display: flex; }
+  .banner button { margin-left: auto; }
+
+  main { flex: 1; min-height: 0; position: relative; margin: 0 28px; display: grid; grid-template-columns: minmax(320px, 46%) 1fr; gap: 18px; }
+  .board {
+    background: rgba(255,250,247,.65); border: 1px solid var(--line); border-radius: 18px; padding: 12px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 9px; align-content: start; overflow: auto;
+  }
+  .empty {
+    grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted);
+    font: italic 500 20px Fraunces, Georgia, serif;
+  }
+  .empty small { display: block; font: 12px "Atkinson Hyperlegible", sans-serif; margin-top: 6px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 8px 10px;
+    min-height: 62px; transition: border-color .3s, box-shadow .3s;
+  }
+  .card.hit { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
+  .card .top { display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12.5px; }
+  .card .top svg { flex: none; color: var(--muted); }
+  .card .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card .count { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; transition: color .3s; }
+  .card .count.pop { animation: pop .35s; color: var(--rose); }
+  @keyframes pop { 40% { transform: scale(1.45); } }
+  .strip { display: flex; gap: 3px; margin-top: 7px; height: 34px; align-items: center; }
+  .strip img { width: 34px; height: 34px; border-radius: 5px; object-fit: cover; animation: land .3s ease-out; }
+  .strip .more { font-size: 11px; color: var(--muted); padding-left: 3px; }
+  @keyframes land { from { transform: scale(1.4); opacity: .4; } }
+
+  .pile {
+    position: relative; border-radius: 18px; overflow: hidden;
+    background: radial-gradient(closest-side, #fff 0%, #F4E9D8 60%, #EFE4D3 100%);
+    border: 1px solid var(--line);
+  }
+  .pile .hint {
+    position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+    font: italic 500 20px Fraunces, Georgia, serif; color: var(--muted); padding: 30px;
+  }
+  .pile .hint small { display: block; font: 12px "Atkinson Hyperlegible", sans-serif; margin-top: 6px; font-style: normal; }
+  .shimmer { animation: shimmer 1.6s ease-in-out infinite; }
+  @keyframes shimmer { 50% { opacity: .35; } }
+  .tag {
+    position: absolute; left: 12px; bottom: 12px; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    background: rgba(43,37,35,.72); color: #fff; padding: 5px 10px; border-radius: 999px; z-index: 2;
+  }
+
+  #layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+  .tile {
+    position: absolute; left: 0; top: 0; border-radius: 5px; background-size: cover; background-position: center;
+    box-shadow: 0 2px 6px rgba(40,25,20,.28), 0 0 0 1.5px #fff; will-change: transform;
+  }
+  .tile.in { animation: drop .6s cubic-bezier(.2,.9,.3,1.2) backwards; }
+  @keyframes drop { from { opacity: 0; } }
+  .tile.fly { transition: transform .75s cubic-bezier(.65,0,.25,1), opacity .2s .62s; z-index: 3; }
+
+  footer { padding: 10px 28px 14px; display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 12.5px; }
+  #status { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  details { position: relative; }
+  details summary { cursor: pointer; list-style: none; text-decoration: underline; }
+  details pre {
+    position: absolute; right: 0; bottom: 26px; width: min(720px, 80vw); max-height: 320px; overflow: auto; z-index: 9;
+    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 0;
+    font: 11.5px/1.5 Consolas, monospace; color: var(--ink); box-shadow: var(--shadow); white-space: pre-wrap;
+  }
+  @media (prefers-reduced-motion: reduce) { .tile.fly { transition-duration: .01s; } .tile.in { animation: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="kicker"><b>+</b>&nbsp; Sort my footage</div>
+    <h1>Every clip named. <em>Every clip filed.</em></h1>
+  </div>
+  <div class="pill" id="pill"></div>
+</header>
+
+<section class="controls">
+  <div class="row">
+    <span class="label">Clips</span>
+    <input type="text" id="folder" placeholder="The folder with your clips">
+    <button data-act="icloud">From iCloud</button>
+    <button data-act="iphone">iPhone cable</button>
+    <button data-act="pick-folder">Choose folder</button>
+    <button data-act="pick-zip">iCloud .zip</button>
+  </div>
+  <div class="side">
+    <button class="go" data-act="sort">Sort</button>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button data-act="undo">Undo last sort</button>
+      <button data-act="open">Open folder</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="label">Folders</span>
+    <input type="text" id="folders" dir="auto" placeholder="Type the folders you want, separated by commas. For example: Beach, Selfie, B-roll">
+    <div class="seg" id="kind" role="radiogroup" aria-label="What to sort">
+      <button type="button" data-kind="videos" class="on">Videos</button>
+      <button type="button" data-kind="photos">Photos</button>
+      <button type="button" data-kind="both">Both</button>
+    </div>
+  </div>
+</section>
+
+<div class="banner" id="banner">
+  Claude needs a one-time sign-in on this laptop, with a Claude Pro account. A window and then your browser will open; sign in, then press Sort again.
+  <button data-act="login">Sign in to Claude</button>
+</div>
+
+<main id="main">
+  <div class="board" id="board"></div>
+  <div class="pile" id="pile">
+    <div class="hint" id="hint"><div>Your clips will gather here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div></div>
+    <div class="tag" id="tag">Sort my footage</div>
+  </div>
+  <div id="layer"></div>
+</main>
+
+<footer>
+  <span id="status">Ready.</span>
+  <details><summary>Details</summary><pre id="log"></pre></details>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const folderIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+
+let run = -1, folderKey = "", tiles = new Map(), landedSeen = 0, queue = [], counts = {}, firstLoad = true;
+let typedFolder = false;
+$("#folder").addEventListener("input", () => typedFolder = true);
+
+let kind = "videos";
+try { kind = localStorage.getItem("kind") || "videos"; } catch {}
+function showKind() { document.querySelectorAll("#kind button").forEach(b => b.classList.toggle("on", b.dataset.kind === kind)); }
+document.querySelectorAll("#kind button").forEach(b => b.addEventListener("click", () => {
+  kind = b.dataset.kind; showKind();
+  try { localStorage.setItem("kind", kind); } catch {}
+}));
+showKind();
+
+function post(path, body = {}) {
+  body.kind = kind;
+  return fetch(path, { method: "POST", body: JSON.stringify(body) }).then(r => r.json()).catch(() => ({}));
+}
+
+document.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", async () => {
+  const act = b.dataset.act, folder = $("#folder").value.trim();
+  if (act === "icloud") {
+    const d = prompt("Bring the new clips you filmed in the last how many days? (0 = everything)", "7");
+    if (d === null) return;
+    return post("/icloud", { days: parseInt(d) || 0 });
+  }
+  if (act === "iphone") {
+    const d = prompt("Plug in the iPhone with the cable, unlock it and tap \"Trust\" if it asks.\n\nBring clips from the last how many days? (0 = everything)", "7");
+    if (d === null) return;
+    return post("/iphone", { days: parseInt(d) || 0 });
+  }
+  if (act === "sort") typedFolder = false;
+  const res = await post("/" + act, { folder, folders: $("#folders").value });
+  if (res.folder !== undefined) { $("#folder").value = res.folder; typedFolder = false; }
+}));
+
+function cardId(name) { return "c_" + [...name].map(c => c.charCodeAt(0).toString(36)).join(""); }
+
+function buildBoard(folders) {
+  const board = $("#board");
+  board.innerHTML = "";
+  counts = {};
+  for (const f of folders) {
+    counts[f] = 0;
+    const el = document.createElement("div");
+    el.className = "card"; el.id = cardId(f);
+    el.innerHTML = `<div class="top">${folderIcon}<span class="name"></span><span class="count">0</span></div><div class="strip"></div>`;
+    el.querySelector(".name").textContent = f;
+    el.querySelector(".name").dir = "auto";
+    board.appendChild(el);
+  }
+  if (!folders.length) {
+    board.innerHTML = '<div class="empty">Type your folders above<small>For example: Beach, Selfie, B-roll</small></div>';
+  }
+}
+
+// The folders she types, as the tool will use them (same rules as the Python side).
+function typedFolders() {
+  const list = $("#folders").value.split(/[,;\n]/).map(f => f.replace(/[<>:"/\\|?*]/g, "").trim()).filter(Boolean);
+  if (!list.length) return [];
+  if (!list.includes("Other")) list.push("Other");
+  return [...new Set(list)];
+}
+let foldersLoaded = false;
+$("#folders").addEventListener("input", () => {
+  if (!tiles.size && !queue.length) { folderKey = typedFolders().join("|"); buildBoard(typedFolders()); }
+});
+
+function tileSize(n) {
+  const p = $("#pile").getBoundingClientRect();
+  return Math.max(20, Math.min(64, Math.sqrt(p.width * p.height * 0.42 / Math.max(n, 1))));
+}
+
+function buildPile(items) {
+  $("#layer").innerHTML = ""; tiles.clear();
+  const main = $("#main").getBoundingClientRect(), p = $("#pile").getBoundingClientRect();
+  const size = tileSize(items.length);
+  const cx = p.left - main.left + p.width / 2, cy = p.top - main.top + p.height / 2;
+  const R = Math.min(p.width, p.height) * 0.42;
+  items.forEach((it, i) => {
+    // spread on a sunflower spiral so the pile looks full but organic
+    const a = i * 2.39996, r = R * Math.sqrt((i + 0.5) / items.length) * (0.9 + Math.random() * 0.2);
+    const x = cx + Math.cos(a) * r - size / 2, y = cy + Math.sin(a) * r - size / 2;
+    const rot = (Math.random() - 0.5) * 34;
+    const t = document.createElement("div");
+    t.className = "tile in";
+    t.style.width = t.style.height = size + "px";
+    t.style.backgroundImage = `url(/thumb/${it.id}.jpg?r=${run})`;
+    t.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+    t.style.animationDelay = (i * 12) + "ms";
+    t.title = it.original;
+    $("#layer").appendChild(t);
+    tiles.set(it.id, { el: t, size });
+  });
+}
+
+// If the window is resized, gather the clips still waiting back into the pile.
+let lastItems = [];
+window.addEventListener("resize", () => {
+  clearTimeout(window._rz);
+  window._rz = setTimeout(() => {
+    if (!tiles.size) return;
+    const waiting = lastItems.filter(it => tiles.has(it.id));
+    buildPile(waiting);
+  }, 150);
+});
+
+function addToCard(folder, id, animate) {
+  const card = document.getElementById(cardId(folder));
+  if (!card) return;
+  counts[folder] = (counts[folder] || 0) + 1;
+  const c = card.querySelector(".count");
+  c.textContent = counts[folder];
+  const strip = card.querySelector(".strip");
+  const imgs = strip.querySelectorAll("img").length;
+  const maxImgs = Math.max(3, Math.floor((card.clientWidth - 46) / 37));
+  if (imgs < maxImgs) {
+    const img = document.createElement("img");
+    img.src = `/thumb/${id}.jpg?r=${run}`;
+    strip.appendChild(img);
+  } else {
+    let more = strip.querySelector(".more");
+    if (!more) { more = document.createElement("span"); more.className = "more"; strip.appendChild(more); }
+    more.textContent = "+" + (counts[folder] - imgs);
+  }
+  if (animate) {
+    c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop");
+    card.classList.add("hit"); clearTimeout(card._t); card._t = setTimeout(() => card.classList.remove("hit"), 500);
+  }
+}
+
+function fly(land) {
+  const t = tiles.get(land.id);
+  const card = document.getElementById(cardId(land.folder));
+  if (!t || !card) { addToCard(land.folder, land.id, true); return; }
+  const main = $("#main").getBoundingClientRect(), r = card.querySelector(".strip").getBoundingClientRect();
+  const imgs = card.querySelectorAll(".strip img").length;
+  const tx = r.left - main.left + Math.min(imgs, 6) * 37 - (t.size - 34) / 2;
+  const ty = r.top - main.top - (t.size - 34) / 2;
+  const s = 34 / t.size;
+  t.el.classList.remove("in");
+  t.el.classList.add("fly");
+  requestAnimationFrame(() => {
+    t.el.style.transform = `translate(${tx}px, ${ty}px) rotate(0deg) scale(${s})`;
+    t.el.style.opacity = 0;
+  });
+  setTimeout(() => { addToCard(land.folder, land.id, true); t.el.remove(); }, 760);
+  tiles.delete(land.id);
+}
+
+// Spread the flights over about 8 seconds, however many there are.
+let flyGap = 110;
+(function flyLoop() {
+  const next = queue.shift();
+  if (next) fly(next);
+  setTimeout(flyLoop, flyGap);
+})();
+
+async function tick() {
+  let s;
+  try { s = await (await fetch("/state")).json(); } catch { return; }
+  if (!typedFolder && document.activeElement !== $("#folder") && s.folder !== undefined) $("#folder").value = s.folder;
+  document.querySelectorAll("[data-act]").forEach(b => { if (b.dataset.act !== "open" && b.dataset.act !== "login") b.disabled = s.busy; });
+  $("#banner").classList.toggle("on", s.phase === "login");
+
+  if (s.go_now && !s.busy) document.querySelector("[data-act=sort]").click();
+  lastItems = s.items;
+  if (!foldersLoaded) {
+    foldersLoaded = true;
+    if (!$("#folders").value) $("#folders").value = s.folders_text || "";
+    if (s.kind) { kind = s.kind; showKind(); }
+    if (s.autostart && !s.busy && !s.items.length) setTimeout(() => document.querySelector('[data-act=sort]').click(), 3000);
+    buildBoard(typedFolders()); folderKey = typedFolders().join("|");
+  }
+  // While sorting, show the folders of this sort; otherwise show what she typed.
+  const shown = s.items.length ? s.folders : typedFolders();
+  const key = shown.join("|");
+  if (s.run !== run) {
+    run = s.run; landedSeen = 0; queue = []; folderKey = key;
+    buildBoard(shown); $("#layer").innerHTML = ""; tiles.clear();
+  } else if (key !== folderKey && !s.items.length && s.phase !== "done") {
+    folderKey = key; buildBoard(shown);
+  }
+  if (s.items.length && !tiles.size && landedSeen === 0 && !queue.length) {
+    buildPile(s.items.filter(it => !s.landed.some(l => l.id === it.id)));
+  }
+  if (s.landed.length > landedSeen) {
+    const fresh = s.landed.slice(landedSeen);
+    landedSeen = s.landed.length;
+    if (firstLoad) fresh.forEach(l => { addToCard(l.folder, l.id, false); tiles.get(l.id)?.el.remove(); tiles.delete(l.id); });
+    else { queue.push(...fresh); flyGap = Math.max(90, Math.min(260, 8000 / Math.max(lastItems.length, 1))); }
+  }
+  firstLoad = false;
+
+  const hint = $("#hint");
+  const pileEmpty = !s.items.length;
+  const allFiled = s.phase === "done" && !tiles.size && !queue.length;
+  hint.style.display = pileEmpty || allFiled ? "grid" : "none";
+  let html = "";
+  if (s.phase === "preparing") html = '<div class="shimmer">Making previews of every clip…</div>';
+  else if (allFiled) html = `<div>All ${s.landed.length} filed.<small>Each one has a new name and a line in footage-index.md.</small></div>`;
+  else if (pileEmpty) html = '<div>Your clips will gather here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div>';
+  if (html && hint.innerHTML !== html) hint.innerHTML = html;
+
+  const done = s.landed.length, total = s.items.length;
+  $("#tag").textContent = s.phase === "sorting" ? `${total} files · Claude is looking` :
+                          s.phase === "done" ? `${done} files · sorted` : "Sort my footage";
+  const pill = $("#pill");
+  pill.classList.toggle("on", total > 0);
+  pill.textContent = total ? `${done} / ${total} filed` : "";
+
+  $("#status").textContent = s.log.length ? s.log[s.log.length - 1].trim() : "Ready.";
+  const log = $("#log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;
+  log.textContent = s.log.join("\n");
+  if (atEnd) log.scrollTop = log.scrollHeight;
+}
+setInterval(tick, 400);
+tick();
+</script>
+</body>
+</html>
