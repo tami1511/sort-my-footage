@@ -3,6 +3,7 @@
 You film on your iPhone. On your laptop, Claude looks at every clip, gives it a name that
 says what's in it, and puts it in the folders you choose (for example: Beach, Selfie, B-roll).
 You watch every clip fly into its folder.
+When you press Sort, your photos first fly from the iPhone into Downloads, then on to their folders.
 
 **Needs:** Windows 10 or 11, and Claude Code with a paid Claude plan (Pro or higher).
 

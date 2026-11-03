@@ -25,7 +25,7 @@ if (-not $phone) {
     Write-Output "No iPhone found. Plug it in with the cable and unlock it."
     exit 2
 }
-Write-Output "Found $($phone.Name)."
+Write-Output "Found the iPhone."
 
 $storage = $phone.GetFolder.Items() | Select-Object -First 1
 if (-not $storage) {

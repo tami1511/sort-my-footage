@@ -278,7 +278,8 @@ def _ask_claude_once(batch, folders, work_dir):
         for b in batch)
     prompt = PROMPT.format(folders="\n".join(f"  - {f}" for f in folders),
                            other=OTHER, items=items)
-    r = run([tool("claude"), "-p", "--model", MODEL, "--tools", "Read", "--allowedTools", "Read",
+    # Read is the only tool, and only for files in this run's own temporary folder (the previews).
+    r = run([tool("claude"), "-p", "--model", MODEL, "--tools", "Read", "--allowedTools", "Read(./**)",
              "--strict-mcp-config", "--no-session-persistence", "--output-format", "json"],
             input=prompt.encode("utf-8"), cwd=str(work_dir), env=claude_env(), timeout=600)
     raw = r.stdout.decode("utf-8", "replace")
@@ -328,9 +329,13 @@ def write_index(root, entries):
     with open(root / "footage-index.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh)
         w.writerow(["folder", "file", "type", "length", "filmed", "description", "original name"])
+        def cell(v):
+            # A cell starting with = + - @ would run as a formula in Excel.
+            v = str(v)
+            return "'" + v if v[:1] in ("=", "+", "-", "@", "\t", "\r") else v
         for e in sorted(entries, key=lambda e: (e["folder"], e["file"])):
-            w.writerow([e["folder"], e["file"], e["type"], e["length"], e["filmed"],
-                        e["description"], e["original"]])
+            w.writerow([cell(x) for x in (e["folder"], e["file"], e["type"], e["length"], e["filmed"],
+                                          e["description"], e["original"])])
 
     lines = ["# Footage index", "",
              f"Every sorted clip in this folder, with what is in it. {len(entries)} items.",
@@ -391,7 +396,8 @@ def sort_folder(root, folder_text="default", log=print, on_items=None, on_sorted
 
     try:
         with tempfile.TemporaryDirectory(prefix="sortfootage_") as tmp:
-            work = Path(tmp)
+            # The full name, not Windows' short 8.3 form, so Claude's "read only here" rule matches.
+            work = Path(os.path.realpath(tmp))
             items = []
             # previews in parallel: ffmpeg per file is the slow part
             with cf.ThreadPoolExecutor(8) as pp:
@@ -447,8 +453,21 @@ def undo_last(root, log=print):
         return 0
     last = logs[-1]
     back = 0
+    base = root.resolve()
+
+    def inside(p):
+        # The undo log is a plain file: never trust it to move anything outside this folder.
+        try:
+            p.resolve().relative_to(base)
+            return True
+        except (ValueError, OSError):
+            return False
+
     for m in reversed(json.loads(last.read_text("utf-8"))):
         src, dest = Path(m["to"]), Path(m["from"])
+        if not (inside(src) and inside(dest)):
+            log(f"  Skipped one entry in the undo list that pointed outside this folder.")
+            continue
         if src.exists() and not dest.exists():
             shutil.move(str(src), str(dest))
             back += 1
@@ -574,6 +593,25 @@ def save_settings(data):
     SETTINGS.write_text(json.dumps({**load_settings(), **data}, ensure_ascii=False, indent=1), "utf-8")
 
 
+def scrub(text):
+    """What the window shows may be filmed or shared: never the computer's name,
+    the user's name or a full path. Paths under the home folder become ~."""
+    text = str(text)
+    home = str(Path.home())
+    for h in {home, home.replace("\\", "/"), os.environ.get("USERPROFILE", ""), str(DATA_DIR.parent)}:
+        if len(h) > 3:
+            text = re.sub(re.escape(h), "~", text, flags=re.I)
+    for name in (os.environ.get("USERNAME", ""), os.environ.get("COMPUTERNAME", "")):
+        if len(name) > 2:
+            text = re.sub(re.escape(name), "…", text, flags=re.I)
+    return text
+
+
+def folder_label(folder):
+    """Only the folder's own name, never the path to it."""
+    return scrub(Path(folder).name) if folder else ""
+
+
 class State:
     def __init__(self):
         self.lock = threading.Lock()
@@ -607,7 +645,7 @@ class State:
             return {"busy": self.busy, "phase": self.phase, "run": self.run_id,
                     "folders": self.folders, "folders_text": self.folders_text, "kind": self.kind, "autostart": self.autostart, "go_now": getattr(self, "go_now", False) and not self.busy,
                     "items": self.items, "landed": self.landed,
-                    "log": self.log[-80:], "folder": self.folder,
+                    "log": [scrub(line) for line in self.log[-80:]], "folder": folder_label(self.folder),
                     "defaults": DEFAULT_FOLDERS}
 
 
@@ -736,14 +774,15 @@ def serve_window(open_app=True, port=0):
                     raise ValueError
             except ValueError:
                 return self.send(b"bad request", "text/plain", 400)
-            folder = (data.get("folder") or "").strip().strip('"')
+            # The window only shows the folder's name; unless she typed a new path, use the one we hold.
+            folder = (data.get("folder") or "").strip().strip('"') or st.folder
             kind = data.get("kind") if data.get("kind") in KIND_EXT else "both"
             ok, extra = True, {}
             if self.path == "/pick-folder":
                 p = pick_path("folder")
                 if p:
                     st.folder = str(Path(p))
-                extra["folder"] = st.folder
+                extra["folder"] = folder_label(st.folder)
             elif self.path == "/pick-zip":
                 z = pick_path("zip")
                 if z:
