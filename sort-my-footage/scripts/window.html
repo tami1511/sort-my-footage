@@ -110,31 +110,15 @@
     font: italic 500 18px Fraunces, Georgia, serif; color: var(--muted); padding: 0 24px; z-index: 1;
   }
 
-  /* Download stage: the iPhone on the right, the Downloads folder on the left. */
+  /* Rain lands inside the collection area before filing begins. */
   .dl {
-    position: absolute; left: 7%; top: 50%; width: 46%; height: 52%; transform: translateY(-46%);
+    position: absolute; left: 4%; top: 47%; width: 92%; height: 70%; transform: translateY(-46%);
     border: 1.5px dashed #D9CBB6; border-radius: 16px; background: rgba(255,255,255,.55);
   }
   .dl .lbl { position: absolute; left: 12px; top: 10px; display: flex; gap: 6px; align-items: center; font-weight: 700; font-size: 12.5px; }
   .dl .lbl svg { color: var(--rose); }
   .dl .num { position: absolute; right: 12px; top: 6px; font: 600 22px Fraunces, Georgia, serif; color: var(--rose); font-variant-numeric: tabular-nums; }
   .dl .num.pop { animation: pop .35s; }
-  .phone {
-    position: absolute; right: 9%; top: 50%; width: clamp(84px, 21%, 124px); aspect-ratio: 9 / 19;
-    transform: translateY(-46%); border-radius: 22px; background: #1A1A1A; padding: 6px;
-    box-shadow: 0 10px 28px rgba(60,40,30,.22);
-  }
-  .phone::before {
-    content: ""; position: absolute; top: 11px; left: 50%; width: 34%; height: 9px; transform: translateX(-50%);
-    background: #1A1A1A; border-radius: 8px; z-index: 1;
-  }
-  .phone .screen {
-    width: 100%; height: 100%; border-radius: 17px; background: linear-gradient(#FAF8F4, #F1EBE2); overflow: hidden;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 24px 4px 4px; align-content: start;
-  }
-  .phone .screen i { aspect-ratio: 1; background: center / cover; border-radius: 2px; transition: opacity .3s; }
-  .phone .screen i.gone { opacity: .12; }
-  .phone-lbl { position: absolute; left: 0; right: 0; bottom: -22px; text-align: center; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
   .tile.dl { transition: transform .7s cubic-bezier(.65,0,.25,1), opacity .25s; z-index: 4; }
   .pile .hint small { display: block; font: 12px "Atkinson Hyperlegible", sans-serif; margin-top: 6px; font-style: normal; }
   .shimmer { animation: shimmer 1.6s ease-in-out infinite; }
@@ -144,7 +128,7 @@
     background: rgba(43,37,35,.72); color: #fff; padding: 5px 10px; border-radius: 999px; z-index: 2;
   }
 
-  #layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+  #layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; border-radius: 18px; }
   .tile {
     position: absolute; left: 0; top: 0; border-radius: 5px; background-size: cover; background-position: center;
     box-shadow: 0 2px 6px rgba(40,25,20,.28), 0 0 0 1.5px #fff; will-change: transform;
@@ -163,6 +147,28 @@
     font: 11.5px/1.5 Consolas, monospace; color: var(--ink); box-shadow: var(--shadow); white-space: pre-wrap;
   }
   @media (prefers-reduced-motion: reduce) { .tile.fly, .tile.dl { transition-duration: .01s; } .tile.in { animation: none; } }
+@media (max-aspect-ratio: 3/4) {
+
+html{background:#ded7cc;}
+body{width:min(100vw,calc(100vh * 9 / 16));height:100vh;margin:0 auto;background:#FAF8F4;box-shadow:0 0 0 1px #d8cdbd;}
+header{padding:14px 16px 8px;gap:6px;align-items:center;}
+.kicker{font-size:9px;}h1{font-size:22px;line-height:1.1;margin:4px 0;}
+.pill{font-size:10px;padding:5px 8px;letter-spacing:.04em;}
+.controls{display:flex;margin:0 14px 8px;padding:8px;min-height:48px;}
+.controls>.row{display:none;}.side{width:100%;justify-content:space-between;}
+.side>div{display:contents!important;}.side [data-act=open]{display:none;}
+.go{font-size:13px;padding:9px 14px;}.side [data-act=undo]{font-size:11px;padding:8px;}
+main{margin:0 14px;display:flex;flex-direction:column;gap:8px;}
+.pile{order:-1;flex:0 0 43%;min-height:190px;}
+.board{flex:1;min-height:0;padding:7px;gap:5px;grid-template-columns:1fr 1fr;align-content:stretch;grid-auto-rows:1fr;overflow:hidden;}
+.card{min-height:0;padding:5px 6px;border-radius:8px;}.card .top{font-size:11px;gap:4px;}.card .count{font-size:11px;}
+.strip{height:20px;margin-top:3px;gap:2px;}.strip img{width:20px;height:20px;border-radius:3px;}.strip .more{font-size:9px;}
+.pile .hint{font-size:16px;top:10px;padding:0 10px;}.pile .hint small{font-size:10px;}
+.dl{top:55%;height:73%;left:4%;width:92%;}.dl .lbl{font-size:11px;left:8px;}.dl .num{font-size:20px;right:8px;}
+.tag{font-size:9px;bottom:7px;left:8px;padding:4px 7px;}
+footer{padding:6px 14px 10px;font-size:10px;}footer details{display:none;}
+
+}
 </style>
 </head>
 <body>
@@ -210,8 +216,7 @@
   <div class="board" id="board"></div>
   <div class="pile" id="pile">
     <div class="dl" id="dl"><div class="lbl"></div><div class="num" id="dlNum">0</div></div>
-    <div class="phone" id="phone"><div class="screen" id="screen"></div><div class="phone-lbl">iPhone</div></div>
-    <div class="hint" id="hint"><div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div></div>
+      <div class="hint" id="hint"><div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div></div>
     <div class="tag" id="tag">Sort my footage</div>
   </div>
   <div id="layer"></div>
@@ -308,7 +313,6 @@ function setDl(n, animate) {
 function resetDownload() {
   dlTimers.forEach(clearTimeout); dlTimers = [];
   downloadDone = false; setDl(0, false);
-  $("#screen").innerHTML = "";
 }
 
 function rel(el) {
@@ -316,18 +320,17 @@ function rel(el) {
   return { x: r.left - main.left, y: r.top - main.top, w: r.width, h: r.height };
 }
 
-// Where each file sits inside the Downloads folder: a loose sunflower pile.
+// Stable landing positions build a layered heap from the bottom upward.
 function dlSpots(n) {
   const d = rel($("#dl"));
-  const top = 34, area = { x: d.x + 10, y: d.y + top, w: d.w - 20, h: d.h - top - 10 };
-  const size = Math.max(18, Math.min(40, Math.sqrt(area.w * area.h * 0.5 / Math.max(n, 1))));
-  const cx = area.x + area.w / 2, cy = area.y + area.h / 2;
-  const Rx = area.w / 2 - size / 2, Ry = area.h / 2 - size / 2;
+  const area = { x: d.x + 14, y: d.y + 48, w: d.w - 28, h: d.h - 62 };
+  const size = Math.max(27, Math.min(48, area.w / 8));
   const spots = [];
   for (let i = 0; i < n; i++) {
-    const a = i * 2.39996, k = Math.sqrt((i + 0.5) / n) * (0.9 + Math.random() * 0.1);
-    spots.push({ x: cx + Math.cos(a) * Rx * k - size / 2, y: cy + Math.sin(a) * Ry * k - size / 2,
-                 rot: (Math.random() - 0.5) * 24 });
+    const spread = ((i * 0.61803398875) % 1) * 2 - 1;
+    const height = (0.12 + 0.72 * Math.sqrt((i + 1) / Math.max(n,1))) * Math.sqrt(1 - spread * spread);
+    spots.push({x:area.x + (spread+1)/2*(area.w-size),
+      y:area.y + area.h-size - height*(area.h-size), rot:((i*29)%27)-13});
   }
   return { spots, size };
 }
@@ -355,32 +358,28 @@ function startDownload(items, animate) {
     setDl(items.length, false); downloadDone = true;
     return;
   }
-  // Her real photos on the iPhone screen (the first 15).
-  const screen = $("#screen");
-  items.slice(0, 15).forEach(it => {
-    const i = document.createElement("i");
-    i.style.backgroundImage = `url(/thumb/${it.id}.jpg?r=${run})`;
-    screen.appendChild(i);
-  });
-  const ph = rel($("#screen"));
-  const gap = Math.max(45, Math.min(160, 3200 / items.length));   // about 3 seconds, however many
+  const gap = Math.max(10, Math.min(120, 14000 / items.length));
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fallMs = reducedMotion ? 1 : 820;
   items.forEach((it, i) => {
-    const sx = ph.x + ph.w / 2 - size / 2, sy = ph.y + ph.h * 0.4 - size / 2;
-    const t = makeTile(it, size, `translate(${sx}px, ${sy}px) scale(.4)`);
+    const end = spots[i], sx=end.x + Math.sin(i*1.7)*24, sy=-size-35;
+    const finalTransform=`translate(${end.x}px, ${end.y}px) rotate(${end.rot}deg)`;
+    const t = makeTile(it, size, finalTransform);
     t.style.opacity = 0;
     dlTimers.push(setTimeout(() => {
-      t.classList.add("dl");
       t.style.opacity = 1;
-      t.style.transform = `translate(${spots[i].x}px, ${spots[i].y}px) rotate(${spots[i].rot}deg)`;
-      screen.children[i]?.classList.add("gone");
+      t.animate([
+        {transform:`translate(${sx}px, ${sy}px) rotate(${end.rot-18}deg)`,opacity:0},
+        {transform:`translate(${end.x}px, ${end.y+5}px) rotate(${end.rot+3}deg)`,opacity:1,offset:.88},
+        {transform:finalTransform,opacity:1}
+      ],{duration:fallMs,easing:'cubic-bezier(.45,0,.85,.6)'});
     }, i * gap));
     dlTimers.push(setTimeout(() => {
-      t.classList.remove("dl");
       setDl(dlCount + 1, true);
-    }, i * gap + 700));
+    }, i * gap + fallMs));
   });
   // A short breath after the last one lands, then the sorting starts.
-  dlTimers.push(setTimeout(() => { downloadDone = true; }, (items.length - 1) * gap + 700 + 450));
+  dlTimers.push(setTimeout(() => { downloadDone = true; }, (items.length - 1) * gap + fallMs + 1800));
 }
 
 // If the window is resized, gather the clips still waiting back into Downloads.
@@ -480,13 +479,14 @@ async function tick() {
     const fresh = s.landed.slice(landedSeen);
     landedSeen = s.landed.length;
     if (firstLoad) fresh.forEach(l => { addToCard(l.folder, l.id, false); tiles.get(l.id)?.el.remove(); tiles.delete(l.id); });
-    else { queue.push(...fresh); flyGap = Math.max(90, Math.min(260, 8000 / Math.max(lastItems.length, 1))); }
+    else { queue.push(...fresh); flyGap = Math.max(12, Math.min(160, 12000 / Math.max(lastItems.length, 1))); }
   }
   firstLoad = false;
 
   const hint = $("#hint");
   const pileEmpty = !s.items.length;
-  const allFiled = s.phase === "done" && !tiles.size && !queue.length;
+  const allFiled = s.phase === "done" && !tiles.size && !queue.length &&
+    Object.values(counts).reduce((a,b)=>a+b,0) === s.landed.length;
   hint.style.display = pileEmpty || allFiled ? "grid" : "none";
   let html = "";
   if (s.phase === "preparing") html = '<div class="shimmer">Getting your clips from the iPhone…</div>';
@@ -494,12 +494,13 @@ async function tick() {
   else if (pileEmpty) html = '<div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div>';
   if (html && hint.innerHTML !== html) hint.innerHTML = html;
 
-  const done = s.landed.length, total = s.items.length;
-  $("#tag").textContent = s.phase === "sorting" ? `${total} files · Claude is looking` :
-                          s.phase === "done" ? `${done} files · sorted` : "Sort my footage";
+  const done = Object.values(counts).reduce((a,b)=>a+b,0), total = s.items.length;
+  $("#tag").textContent = !total ? "Sort my footage" : !downloadDone ?
+    `${dlCount.toLocaleString()} / ${total.toLocaleString()} collected` :
+    done < total ? `${done.toLocaleString()} / ${total.toLocaleString()} sorted` : `${done.toLocaleString()} photos · sorted`;
   const pill = $("#pill");
   pill.classList.toggle("on", total > 0);
-  pill.textContent = total ? `${done} / ${total} filed` : "";
+  pill.textContent = total ? (!downloadDone ? `${dlCount.toLocaleString()} / ${total.toLocaleString()} collected` : `${done.toLocaleString()} / ${total.toLocaleString()} sorted`) : "";
 
   $("#status").textContent = s.log.length ? s.log[s.log.length - 1].trim() : "Ready.";
   const log = $("#log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;

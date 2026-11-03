@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.thumbs/
+.sort-history/
+settings.json
+footage-index.*

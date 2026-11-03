@@ -3,7 +3,7 @@
 You film on your iPhone. On your laptop, Claude looks at every clip, gives it a name that
 says what's in it, and puts it in the folders you choose (for example: Beach, Selfie, B-roll).
 You watch every clip fly into its folder.
-When you press Sort, your photos first fly from the iPhone into Downloads, then on to their folders.
+When you press Sort, real thumbnails rain into a visible pile, pause briefly, then fly into their folders. The counters follow the animation until the last photo lands.
 
 **Needs:** Windows 10 or 11, and Claude Code with a paid Claude plan (Pro or higher).
 
@@ -36,6 +36,10 @@ That's it. Claude adds only what's missing (Python, ffmpeg) and puts a
    - **Choose folder**: any folder of clips.
 3. Type your folders, separated by commas.
 4. Choose **Videos**, **Photos** or **Both**, and press **Sort**.
+
+A narrow portrait window stacks the pile above the folders for recording. Configure your folders in the normal wide window first.
+
+Classification uses uncropped photo previews and validates photo IDs and folder names before moving files. Uncertain classifications go to Other; review the results rather than treating model confidence as a guarantee.
 
 **Undo last sort** puts everything back with the old names.
 **footage-index.md** lists every clip in words, so you can ask Claude "find the clip where...".
