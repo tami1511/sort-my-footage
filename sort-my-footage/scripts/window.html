@@ -5,78 +5,82 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sort My Footage</title>
 <style>
+  /* Oak background, wall-white panels, ink text. Flat: no gradients, no glows. */
   :root {
-    --paper: #FAF8F4;
-    --paper-2: #F1EBE2;
-    --card: #ffffff;
-    --ink: #1A1A1A;
-    --muted: #7d7166;
-    --rose: #9c7240;
-    --rose-soft: #F1E4D1;
-    --line: #E8DFD2;
-    --shadow: 0 1px 2px rgba(60,40,30,.06), 0 8px 24px rgba(60,40,30,.07);
+    --paper: #FAF8F4;                 /* wall white */
+    --ink: #1A1A1A;                   /* ink */
+    --oak: #D9B98C;                   /* oak, the one accent */
+    --card: #FAF8F4;
+    --muted: rgba(26,26,26,.72);      /* ink, lighter */
+    --line: rgba(26,26,26,.18);       /* ink, hairline */
+    --oak-soft: rgba(217,185,140,.38);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
-    background: var(--paper);
+    background: var(--oak);
     color: var(--ink);
     font: 14px/1.45 "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
     display: flex; flex-direction: column; overflow: hidden;
   }
   header { padding: 22px 28px 10px; display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
   .kicker { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
-  .kicker b { color: var(--rose); font-weight: 600; }
-  h1 { font: 500 34px/1.05 Fraunces, Georgia, serif; margin: 4px 0 0; }
-  h1 em { color: var(--rose); }
+  .kicker b { color: var(--ink); font-weight: 700; }
+  h1 {
+    font: 900 34px/1.05 Fraunces, Georgia, serif; margin: 4px 0 0; letter-spacing: -.02em;
+    font-variation-settings: "SOFT" 100, "WONK" 0;
+  }
+  h1 em { font-style: italic; box-shadow: inset 0 -.32em 0 var(--paper); padding: 0 .06em; }
   .pill {
     margin-left: auto; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-    padding: 6px 12px; border-radius: 999px; background: rgba(43,37,35,.75); color: #fff;
+    padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--paper);
     opacity: 0; transform: translateY(4px); transition: .4s;
   }
   .pill.on { opacity: 1; transform: none; }
 
   .controls {
-    margin: 6px 28px 14px; padding: 12px; background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; box-shadow: var(--shadow);
+    margin: 6px 28px 14px; padding: 12px; background: var(--paper); border: 1px solid var(--line);
+    border-radius: 14px;
     display: grid; grid-template-columns: 1fr auto; gap: 10px 14px; align-items: center;
   }
   .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-width: 0; }
-  .label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; width: 62px; flex: none; }
+  .label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; width: 62px; flex: none; }
   input[type=text] {
-    flex: 1; min-width: 160px; border: 1px solid var(--line); background: #fff; border-radius: 9px;
+    flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--paper); border-radius: 9px;
     padding: 8px 10px; font: inherit; color: var(--ink); outline: none;
   }
-  input[type=text]:focus { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
+  input[type=text]:focus { border-color: var(--ink); }
   button {
-    font: 500 13px "Atkinson Hyperlegible", "Segoe UI", sans-serif; border: 1px solid var(--line); background: #fff;
+    font: 500 13px "Atkinson Hyperlegible", "Segoe UI", sans-serif; border: 1px solid var(--line); background: var(--paper);
     color: var(--ink); border-radius: 9px; padding: 8px 12px; cursor: pointer; white-space: nowrap;
     transition: background .15s, transform .1s;
   }
-  button:hover { background: var(--paper); }
+  button:hover { background: rgba(26,26,26,.05); }
   button:active { transform: scale(.97); }
   button:disabled { opacity: .45; cursor: default; }
   .seg { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; flex: none; }
-  .seg button { border: 0; border-radius: 0; padding: 8px 12px; background: #fff; color: var(--muted); }
+  .seg button { border: 0; border-radius: 0; padding: 8px 12px; background: var(--paper); color: var(--muted); }
   .seg button + button { border-left: 1px solid var(--line); }
-  .seg button.on { background: var(--rose); color: #fff; font-weight: 600; }
+  .seg button.on { background: var(--ink); color: var(--paper); font-weight: 700; }
   .go {
-    background: var(--rose); border-color: var(--rose); color: #fff; font-weight: 600;
+    background: var(--ink); border-color: var(--ink); color: var(--paper); font-weight: 700;
     padding: 12px 26px; font-size: 15px; border-radius: 11px; display: flex; gap: 8px; align-items: center;
   }
-  .go:hover { background: #845f33; }
+  .go:hover { background: var(--ink); opacity: .88; }
   .side { display: flex; gap: 8px; grid-row: span 2; align-items: center; }
 
   .banner {
     display: none; margin: 0 28px 12px; padding: 10px 14px; border-radius: 11px;
-    background: var(--rose-soft); color: #5e4423; align-items: center; gap: 12px;
+    background: var(--paper); color: var(--ink); align-items: center; gap: 12px;
   }
   .banner.on { display: flex; }
   .banner button { margin-left: auto; }
 
-  main { flex: 1; min-height: 0; position: relative; margin: 0 28px; display: grid; grid-template-columns: minmax(320px, 46%) 1fr; gap: 18px; }
+  /* The swirl gets the bigger side. */
+  main { flex: 1; min-height: 0; position: relative; margin: 0 28px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr); gap: 20px; }
   .board {
-    background: rgba(255,250,247,.65); border: 1px solid var(--line); border-radius: 18px; padding: 12px;
+    grid-column: 2; grid-row: 1;
+    background: var(--oak); border: 1.5px solid rgba(26,26,26,.28); border-radius: 18px; padding: 12px;
     display: grid; grid-template-columns: 1fr 1fr; gap: 9px; align-content: start; overflow: auto;
   }
   .empty {
@@ -88,12 +92,12 @@
     background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 8px 10px;
     min-height: 62px; transition: border-color .3s, box-shadow .3s;
   }
-  .card.hit { border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-soft); }
-  .card .top { display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12.5px; }
-  .card .top svg { flex: none; color: var(--muted); }
+  .card.hit { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(26,26,26,.18); }
+  .card .top { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12.5px; }
+  .card .top svg { flex: none; color: var(--ink); }
   .card .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card .count { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; transition: color .3s; }
-  .card .count.pop { animation: pop .35s; color: var(--rose); }
+  .card .count.pop { animation: pop .35s; color: var(--ink); }
   @keyframes pop { 40% { transform: scale(1.45); } }
   .strip { display: flex; gap: 3px; margin-top: 7px; height: 34px; align-items: center; }
   .strip img { width: 34px; height: 34px; border-radius: 5px; object-fit: cover; animation: land .3s ease-out; }
@@ -101,41 +105,33 @@
   @keyframes land { from { transform: scale(1.4); opacity: .4; } }
 
   .pile {
+    grid-column: 1; grid-row: 1; min-height: 0;
     position: relative; border-radius: 18px; overflow: hidden;
-    background: radial-gradient(closest-side, #fff 0%, #F4E9D8 60%, #EFE4D3 100%);
-    border: 1px solid var(--line);
+    background: var(--oak); border: 1.5px solid rgba(26,26,26,.28);
   }
   .pile .hint {
-    position: absolute; left: 0; right: 0; top: 18px; display: grid; place-items: center; text-align: center;
-    font: italic 500 18px Fraunces, Georgia, serif; color: var(--muted); padding: 0 24px; z-index: 1;
+    position: absolute; left: 0; right: 0; top: 42%; display: grid; place-items: center; text-align: center;
+    font: italic 500 20px Fraunces, Georgia, serif; color: var(--muted); padding: 0 24px; z-index: 1;
   }
-
-  /* Rain lands inside the collection area before filing begins. */
-  .dl {
-    position: absolute; left: 4%; top: 47%; width: 92%; height: 70%; transform: translateY(-46%);
-    border: 1.5px dashed #D9CBB6; border-radius: 16px; background: rgba(255,255,255,.55);
-  }
-  .dl .lbl { position: absolute; left: 12px; top: 10px; display: flex; gap: 6px; align-items: center; font-weight: 700; font-size: 12.5px; }
-  .dl .lbl svg { color: var(--rose); }
-  .dl .num { position: absolute; right: 12px; top: 6px; font: 600 22px Fraunces, Georgia, serif; color: var(--rose); font-variant-numeric: tabular-nums; }
-  .dl .num.pop { animation: pop .35s; }
-  .tile.dl { transition: transform .7s cubic-bezier(.65,0,.25,1), opacity .25s; z-index: 4; }
   .pile .hint small { display: block; font: 12px "Atkinson Hyperlegible", sans-serif; margin-top: 6px; font-style: normal; }
+
+  /* Galaxy: the whole pile is one swirl. */
+  .dl { position: absolute; left: 4%; top: 6%; width: 92%; height: 88%; border: 0; background: transparent; }
+  .dl .lbl { position: absolute; left: 6px; top: 2px; display: flex; gap: 6px; align-items: center; font-weight: 700; font-size: 12.5px; }
+  .dl .lbl svg { color: var(--ink); }
+  .phone { display: none; }
   .shimmer { animation: shimmer 1.6s ease-in-out infinite; }
   @keyframes shimmer { 50% { opacity: .35; } }
   .tag {
     position: absolute; left: 12px; bottom: 12px; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
-    background: rgba(43,37,35,.72); color: #fff; padding: 5px 10px; border-radius: 999px; z-index: 2;
+    background: var(--ink); color: var(--paper); padding: 5px 10px; border-radius: 999px; z-index: 2;
   }
 
-  #layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; border-radius: 18px; }
+  #layer { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
   .tile {
-    position: absolute; left: 0; top: 0; border-radius: 5px; background-size: cover; background-position: center;
-    box-shadow: 0 2px 6px rgba(40,25,20,.28), 0 0 0 1.5px #fff; will-change: transform;
+    position: absolute; left: 0; top: 0; border-radius: 6px; background-size: cover; background-position: center;
+    border: 1.5px solid var(--paper);
   }
-  .tile.in { animation: drop .6s cubic-bezier(.2,.9,.3,1.2) backwards; }
-  @keyframes drop { from { opacity: 0; } }
-  .tile.fly { transition: transform .75s cubic-bezier(.65,0,.25,1), opacity .2s .62s; z-index: 3; }
 
   footer { padding: 10px 28px 14px; display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 12.5px; }
   #status { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -143,32 +139,23 @@
   details summary { cursor: pointer; list-style: none; text-decoration: underline; }
   details pre {
     position: absolute; right: 0; bottom: 26px; width: min(720px, 80vw); max-height: 320px; overflow: auto; z-index: 9;
-    background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 0;
-    font: 11.5px/1.5 Consolas, monospace; color: var(--ink); box-shadow: var(--shadow); white-space: pre-wrap;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 0;
+    font: 11.5px/1.5 Consolas, monospace; color: var(--ink); white-space: pre-wrap;
   }
-  @media (prefers-reduced-motion: reduce) { .tile.fly, .tile.dl { transition-duration: .01s; } .tile.in { animation: none; } }
-@media (max-aspect-ratio: 3/4) {
+  /* Fast replay (press R after a sort): same motion, quicker. */
+  .fast .pill, .fast .tag { visibility: hidden; }
 
-html{background:#ded7cc;}
-body{width:min(100vw,calc(100vh * 9 / 16));height:100vh;margin:0 auto;background:#FAF8F4;box-shadow:0 0 0 1px #d8cdbd;}
-header{padding:14px 16px 8px;gap:6px;align-items:center;}
-.kicker{font-size:9px;}h1{font-size:22px;line-height:1.1;margin:4px 0;}
-.pill{font-size:10px;padding:5px 8px;letter-spacing:.04em;}
-.controls{display:flex;margin:0 14px 8px;padding:8px;min-height:48px;}
-.controls>.row{display:none;}.side{width:100%;justify-content:space-between;}
-.side>div{display:contents!important;}.side [data-act=open]{display:none;}
-.go{font-size:13px;padding:9px 14px;}.side [data-act=undo]{font-size:11px;padding:8px;}
-main{margin:0 14px;display:flex;flex-direction:column;gap:8px;}
-.pile{order:-1;flex:0 0 43%;min-height:190px;}
-.board{flex:1;min-height:0;padding:7px;gap:5px;grid-template-columns:1fr 1fr;align-content:stretch;grid-auto-rows:1fr;overflow:hidden;}
-.card{min-height:0;padding:5px 6px;border-radius:8px;}.card .top{font-size:11px;gap:4px;}.card .count{font-size:11px;}
-.strip{height:20px;margin-top:3px;gap:2px;}.strip img{width:20px;height:20px;border-radius:3px;}.strip .more{font-size:9px;}
-.pile .hint{font-size:16px;top:10px;padding:0 10px;}.pile .hint small{font-size:10px;}
-.dl{top:55%;height:73%;left:4%;width:92%;}.dl .lbl{font-size:11px;left:8px;}.dl .num{font-size:20px;right:8px;}
-.tag{font-size:9px;bottom:7px;left:8px;padding:4px 7px;}
-footer{padding:6px 14px 10px;font-size:10px;}footer details{display:none;}
-
-}
+  /* A tall window (for a 9:16 video): the swirl on top, the folders below. */
+  @media (max-width: 760px) {
+    header { padding: 16px 16px 6px; }
+    h1 { font-size: 26px; }
+    .controls { margin: 4px 16px 10px; grid-template-columns: 1fr; }
+    .side { grid-row: auto; }
+    main { margin: 0 16px; grid-template-columns: 1fr; grid-template-rows: minmax(260px, 48%) 1fr; gap: 12px; }
+    .pile { grid-column: 1; grid-row: 1; }
+    .board { grid-column: 1; grid-row: 2; }
+    footer { padding: 8px 16px 10px; }
+  }
 </style>
 </head>
 <body>
@@ -215,8 +202,9 @@ footer{padding:6px 14px 10px;font-size:10px;}footer details{display:none;}
 <main id="main">
   <div class="board" id="board"></div>
   <div class="pile" id="pile">
-    <div class="dl" id="dl"><div class="lbl"></div><div class="num" id="dlNum">0</div></div>
-      <div class="hint" id="hint"><div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div></div>
+    <div class="dl" id="dl"><div class="lbl"></div></div>
+    <div class="phone" id="phone"><div class="screen" id="screen"></div><div class="phone-lbl">iPhone</div></div>
+    <div class="hint" id="hint"><div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div></div>
     <div class="tag" id="tag">Sort my footage</div>
   </div>
   <div id="layer"></div>
@@ -250,17 +238,17 @@ function post(path, body = {}) {
 }
 
 document.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", async () => {
-  // The field shows only the folder's name. A path is sent only when she typed one herself.
+  // The field shows only the folder's name. A path is sent only when one was typed in.
   const act = b.dataset.act, folder = typedFolder ? $("#folder").value.trim() : "";
   if (act === "icloud") {
     const d = prompt("Bring the new clips you filmed in the last how many days? (0 = everything)", "7");
     if (d === null) return;
-    return post("/icloud", { days: parseInt(d) || 0 });
+    return post("/icloud", { days: parseInt(d) || 0, folders: $("#folders").value });
   }
   if (act === "iphone") {
     const d = prompt("Plug in the iPhone with the cable, unlock it and tap \"Trust\" if it asks.\n\nBring clips from the last how many days? (0 = everything)", "7");
     if (d === null) return;
-    return post("/iphone", { days: parseInt(d) || 0 });
+    return post("/iphone", { days: parseInt(d) || 0, folders: $("#folders").value });
   }
   if (act === "sort") typedFolder = false;
   const res = await post("/" + act, { folder, folders: $("#folders").value });
@@ -287,7 +275,7 @@ function buildBoard(folders) {
   }
 }
 
-// The folders she types, as the tool will use them (same rules as the Python side).
+// The typed folders, as the tool will use them (same rules as the Python side).
 function typedFolders() {
   const list = $("#folders").value.split(/[,;\n]/).map(f => f.replace(/[<>:"/\\|?*]/g, "").trim()).filter(Boolean);
   if (!list.length) return [];
@@ -299,20 +287,16 @@ $("#folders").addEventListener("input", () => {
   if (!tiles.size && !queue.length) { folderKey = typedFolders().join("|"); buildBoard(typedFolders()); }
 });
 
-$("#dl .lbl").innerHTML = folderIcon + "<span>Downloads</span>";
+$("#dl .lbl").innerHTML = folderIcon + "<span>Your clips</span>";
 
 // Download stage state: every file first flies from the iPhone into Downloads,
 // and only then do Claude's answers send them on to their folders.
 let downloadDone = false, dlCount = 0, dlTimers = [];
-function setDl(n, animate) {
-  dlCount = n;
-  const el = $("#dlNum");
-  el.textContent = n;
-  if (animate) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
-}
+function setDl(n) { dlCount = n; }   // no number on screen; kept only to know how many are waiting
 function resetDownload() {
   dlTimers.forEach(clearTimeout); dlTimers = [];
   downloadDone = false; setDl(0, false);
+  $("#screen").innerHTML = "";
 }
 
 function rel(el) {
@@ -320,20 +304,22 @@ function rel(el) {
   return { x: r.left - main.left, y: r.top - main.top, w: r.width, h: r.height };
 }
 
-// Stable landing positions build a layered heap from the bottom upward.
+// Galaxy: where each file settles, a spiral of clips around the centre.
 function dlSpots(n) {
   const d = rel($("#dl"));
-  const area = { x: d.x + 14, y: d.y + 48, w: d.w - 28, h: d.h - 62 };
-  const size = Math.max(27, Math.min(48, area.w / 8));
+  const top = 26, area = { x: d.x, y: d.y + top, w: d.w, h: d.h - top };
+  const size = Math.max(44, Math.min(110, Math.sqrt(area.w * area.h * 5.2 / Math.max(n, 1))));
+  const cx = area.x + (area.w - size) / 2, cy = area.y + (area.h - size) / 2;
   const spots = [];
   for (let i = 0; i < n; i++) {
-    const spread = ((i * 0.61803398875) % 1) * 2 - 1;
-    const height = (0.12 + 0.72 * Math.sqrt((i + 1) / Math.max(n,1))) * Math.sqrt(1 - spread * spread);
-    spots.push({x:area.x + (spread+1)/2*(area.w-size),
-      y:area.y + area.h-size - height*(area.h-size), rot:((i*29)%27)-13});
+    const radius = .12 + .84 * Math.sqrt((i + .5) / Math.max(n, 1));
+    const angle = i * 2.399963 + Math.sin(i * 1.73) * .22;
+    spots.push({ x: cx + Math.cos(angle) * radius * (area.w - size) * .48,
+                 y: cy + Math.sin(angle) * radius * (area.h - size) * .47, rot: Math.sin(angle) * 24 });
   }
   return { spots, size };
 }
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function makeTile(it, size, transform) {
   const t = document.createElement("div");
@@ -349,37 +335,43 @@ function makeTile(it, size, transform) {
 
 // animate = true: the real download stage. false: put them straight into Downloads
 // (window opened mid-sort, or resized).
-function startDownload(items, animate) {
+function startDownload(items, animate, totalMs = 3200) {
   resetDownload();
   $("#layer").innerHTML = ""; tiles.clear();
   const { spots, size } = dlSpots(items.length);
-  if (!animate || !items.length) {
-    items.forEach((it, i) => makeTile(it, size, `translate(${spots[i].x}px, ${spots[i].y}px) rotate(${spots[i].rot}deg)`));
+  const settle = i => `translate(${spots[i].x}px, ${spots[i].y}px) rotate(${spots[i].rot}deg)`;
+  if (!animate || !items.length || reduced()) {
+    items.forEach((it, i) => makeTile(it, size, settle(i)));
     setDl(items.length, false); downloadDone = true;
     return;
   }
-  const gap = Math.max(10, Math.min(120, 14000 / items.length));
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fallMs = reducedMotion ? 1 : 820;
+  // Each clip swirls in from the outer arm and settles on its place in the spiral.
+  const d = rel($("#dl"));
+  const cx = d.x + d.w / 2 - size / 2, cy = d.y + d.h / 2 - size / 2, rx = d.w * .48, ry = d.h * .45;
+  const gap = Math.min(110, totalMs / items.length);
+  const flight = fast ? 3800 : 1100;            // the replay swirls slower, so the whirlpool shows
+  const turns = fast ? 2.4 : 1.3;
   items.forEach((it, i) => {
-    const end = spots[i], sx=end.x + Math.sin(i*1.7)*24, sy=-size-35;
-    const finalTransform=`translate(${end.x}px, ${end.y}px) rotate(${end.rot}deg)`;
-    const t = makeTile(it, size, finalTransform);
+    const t = makeTile(it, size, settle(i));
     t.style.opacity = 0;
+    const end = spots[i], ex = end.x - cx, ey = end.y - cy;
+    const finishAngle = Math.atan2(ey / ry, ex / rx), finishRadius = Math.hypot(ex / rx, ey / ry);
+    const frames = [];
+    for (let step = 0; step <= 16; step++) {
+      const p = step / 16, smooth = p * p * (3 - 2 * p);
+      const turn = finishAngle - (1 - smooth) * Math.PI * turns, radius = Math.min(finishRadius + (1 - smooth) * .55, 1.02);
+      frames.push({ transform: `translate(${cx + Math.cos(turn) * rx * radius}px, ${cy + Math.sin(turn) * ry * radius}px) rotate(${end.rot * (.4 + .6 * p)}deg) scale(${.7 + .3 * smooth})`,
+                    opacity: Math.min(1, p * 5), offset: p });
+    }
+    frames[16] = { transform: settle(i), opacity: 1, offset: 1 };
     dlTimers.push(setTimeout(() => {
       t.style.opacity = 1;
-      t.animate([
-        {transform:`translate(${sx}px, ${sy}px) rotate(${end.rot-18}deg)`,opacity:0},
-        {transform:`translate(${end.x}px, ${end.y+5}px) rotate(${end.rot+3}deg)`,opacity:1,offset:.88},
-        {transform:finalTransform,opacity:1}
-      ],{duration:fallMs,easing:'cubic-bezier(.45,0,.85,.6)'});
+      t.animate(frames, { duration: flight, easing: "linear" });
     }, i * gap));
-    dlTimers.push(setTimeout(() => {
-      setDl(dlCount + 1, true);
-    }, i * gap + fallMs));
+    dlTimers.push(setTimeout(() => setDl(dlCount + 1), i * gap + flight));
   });
-  // A short breath after the last one lands, then the sorting starts.
-  dlTimers.push(setTimeout(() => { downloadDone = true; }, (items.length - 1) * gap + fallMs + 1800));
+  // A short breath after the last one settles, then the sorting starts.
+  dlTimers.push(setTimeout(() => { downloadDone = true; }, (items.length - 1) * gap + flight + (fast ? 600 : 500)));
 }
 
 // If the window is resized, gather the clips still waiting back into Downloads.
@@ -426,25 +418,60 @@ function fly(land) {
   const tx = r.left - main.left + Math.min(imgs, 6) * 37 - (t.size - 34) / 2;
   const ty = r.top - main.top - (t.size - 34) / 2;
   const s = 34 / t.size;
-  t.el.classList.remove("in");
-  t.el.classList.add("fly");
-  requestAnimationFrame(() => {
-    t.el.style.transform = `translate(${tx}px, ${ty}px) rotate(0deg) scale(${s})`;
-    t.el.style.opacity = 0;
-  });
-  setTimeout(() => { addToCard(land.folder, land.id, true); t.el.remove(); }, 760);
+  // A soft arc up and over to the folder.
+  const from = t.el.getBoundingClientRect();
+  const sx = from.left - main.left, sy = from.top - main.top;
+  t.el.style.zIndex = 2000;
+  const motion = t.el.animate([
+    { transform: t.el.style.transform, opacity: 1 },
+    { transform: `translate(${sx + (tx - sx) * .42}px, ${Math.min(sy, ty) - 55}px) rotate(-8deg) scale(1.12)`, opacity: 1, offset: .48 },
+    { transform: `translate(${tx}px, ${ty}px) rotate(0deg) scale(${s})`, opacity: .9 }
+  ], { duration: reduced() ? 1 : fast ? 1300 : 1050, easing: "cubic-bezier(.35,0,.2,1)", fill: "forwards" });
+  motion.onfinish = () => { addToCard(land.folder, land.id, true); t.el.remove(); };
   tiles.delete(land.id);
-  setDl(Math.max(0, dlCount - 1), false);
+  setDl(Math.max(0, dlCount - 1));
+}
+// Take turns between folders, so every folder fills at once.
+function interleave(fresh) {
+  const groups = new Map();
+  fresh.forEach(l => { if (!groups.has(l.folder)) groups.set(l.folder, []); groups.get(l.folder).push(l); });
+  const out = [];
+  while (groups.size) for (const [f, list] of groups) { out.push(list.shift()); if (!list.length) groups.delete(f); }
+  return out;
 }
 
-// Spread the flights over about 8 seconds, however many there are.
+// Spread the flights over a few seconds, however many there are.
+// Several can leave on the same beat, so 1000 photos still scatter quickly.
 // Nothing leaves Downloads until every file has arrived there.
-let flyGap = 110;
+let flyGap = 110, flyPer = 1;
 (function flyLoop() {
-  const next = downloadDone ? queue.shift() : null;
-  if (next) fly(next);
+  if (downloadDone) for (let k = 0; k < flyPer && queue.length; k++) fly(queue.shift());
   setTimeout(flyLoop, flyGap);
 })();
+function paceFlights(n, totalMs) {
+  flyGap = Math.max(16, Math.min(260, totalMs / Math.max(n, 1)));
+  flyPer = Math.max(1, Math.ceil(n * flyGap / totalMs));
+}
+
+// Fast replay for recording a video: after a real sort, press R and the whole
+// animation plays again from the real results, in a few seconds.
+let fast = false, lastState = null;
+function replay() {
+  const s = lastState;
+  if (!s || s.busy || s.phase !== "done" || !s.landed.length) return;
+  fast = true; document.body.classList.add("fast");
+  queue = []; buildBoard(s.folders);
+  $("#layer").innerHTML = ""; tiles.clear();
+  const landedIds = new Set(s.landed.map(l => l.id));
+  startDownload(s.items.filter(it => landedIds.has(it.id)), true, 6500);
+  queue = interleave(s.landed.slice());
+  paceFlights(queue.length, 7500);
+}
+document.addEventListener("keydown", e => {
+  if (e.key.toLowerCase() !== "r" || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName || "")) return;
+  replay();
+});
 
 async function tick() {
   let s;
@@ -453,21 +480,20 @@ async function tick() {
   document.querySelectorAll("[data-act]").forEach(b => { if (b.dataset.act !== "open" && b.dataset.act !== "login") b.disabled = s.busy; });
   $("#banner").classList.toggle("on", s.phase === "login");
 
-  if (s.go_now && !s.busy) document.querySelector("[data-act=sort]").click();
-  lastItems = s.items;
+  lastItems = s.items; lastState = s;
   if (!foldersLoaded) {
     foldersLoaded = true;
     if (!$("#folders").value) $("#folders").value = s.folders_text || "";
     if (s.kind) { kind = s.kind; showKind(); }
-    if (s.autostart && !s.busy && !s.items.length) setTimeout(() => document.querySelector('[data-act=sort]').click(), 3000);
     buildBoard(typedFolders()); folderKey = typedFolders().join("|");
   }
-  // While sorting, show the folders of this sort; otherwise show what she typed.
+  // While sorting, show the folders of this sort; otherwise show what was typed.
   const shown = s.items.length ? s.folders : typedFolders();
   const key = shown.join("|");
   if (s.run !== run) {
     run = s.run; landedSeen = 0; queue = []; folderKey = key;
     buildBoard(shown); $("#layer").innerHTML = ""; tiles.clear(); resetDownload();
+    fast = false; document.body.classList.remove("fast");
   } else if (key !== folderKey && !s.items.length && s.phase !== "done") {
     folderKey = key; buildBoard(shown);
   }
@@ -479,14 +505,13 @@ async function tick() {
     const fresh = s.landed.slice(landedSeen);
     landedSeen = s.landed.length;
     if (firstLoad) fresh.forEach(l => { addToCard(l.folder, l.id, false); tiles.get(l.id)?.el.remove(); tiles.delete(l.id); });
-    else { queue.push(...fresh); flyGap = Math.max(12, Math.min(160, 12000 / Math.max(lastItems.length, 1))); }
+    else { queue.push(...interleave(fresh)); paceFlights(lastItems.length, 4500); }
   }
   firstLoad = false;
 
   const hint = $("#hint");
   const pileEmpty = !s.items.length;
-  const allFiled = s.phase === "done" && !tiles.size && !queue.length &&
-    Object.values(counts).reduce((a,b)=>a+b,0) === s.landed.length;
+  const allFiled = s.phase === "done" && !tiles.size && !queue.length;
   hint.style.display = pileEmpty || allFiled ? "grid" : "none";
   let html = "";
   if (s.phase === "preparing") html = '<div class="shimmer">Getting your clips from the iPhone…</div>';
@@ -494,13 +519,12 @@ async function tick() {
   else if (pileEmpty) html = '<div>Your clips will come in here.<small>Bring them in from the iPhone or choose a folder, then press Sort.</small></div>';
   if (html && hint.innerHTML !== html) hint.innerHTML = html;
 
-  const done = Object.values(counts).reduce((a,b)=>a+b,0), total = s.items.length;
-  $("#tag").textContent = !total ? "Sort my footage" : !downloadDone ?
-    `${dlCount.toLocaleString()} / ${total.toLocaleString()} collected` :
-    done < total ? `${done.toLocaleString()} / ${total.toLocaleString()} sorted` : `${done.toLocaleString()} photos · sorted`;
+  const done = s.landed.length, total = s.items.length;
+  $("#tag").textContent = s.phase === "sorting" ? `${total} files · Claude is looking` :
+                          s.phase === "done" ? `${done} files · sorted` : "Sort my footage";
   const pill = $("#pill");
   pill.classList.toggle("on", total > 0);
-  pill.textContent = total ? (!downloadDone ? `${dlCount.toLocaleString()} / ${total.toLocaleString()} collected` : `${done.toLocaleString()} / ${total.toLocaleString()} sorted`) : "";
+  pill.textContent = total ? `${done} / ${total} filed` : "";
 
   $("#status").textContent = s.log.length ? s.log[s.log.length - 1].trim() : "Ready.";
   const log = $("#log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;

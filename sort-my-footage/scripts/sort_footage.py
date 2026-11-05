@@ -32,7 +32,7 @@ import zipfile
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent          # the code (lives in the skill folder)
-# Her files and settings live on the Desktop, not inside the skill.
+# The user's files and settings live on the Desktop, not inside the skill.
 def _desktop():
     """The real Desktop, also when OneDrive has moved it."""
     try:
@@ -234,14 +234,14 @@ photo it is the photo itself.
 
 Then decide for each item:
 - name: a short file name, 3 to 6 lowercase English words joined by hyphens, that
-  says what is in it, so she can find it later. Example: black-blazer-mirror-selfie,
+  says what is in it, so it is easy to find later. Example: black-blazer-mirror-selfie,
   latte-art-cafe-window, screen-recording-instagram-insights. No dates, no extension.
 - folder: exactly one of these folder names, copied character for character.
-  She typed these herself, in her own words (they may be in Hebrew or English):
+  The person typed these themselves, in their own words (any language):
 {folders}
   Read each folder name the way a video creator means it. For example "B-roll"
   is footage without anyone talking to the camera (hands, places, objects, walking
-  shots); "Selfie" is her filming herself; "Beach" is anything at the sea.
+  shots); "Selfie" is the person filming themselves; "Beach" is anything at the sea.
   If the folders are days or dates, use the filmed date of each item to choose.
   Pick the single best fit. Only if nothing fits at all, use "{other}".
 - description: one plain sentence: who or what is in it, where, what happens,
@@ -612,11 +612,12 @@ def import_from_iphone(days, kind="videos", log=print):
 # opened in an Edge app window so it looks like its own app.
 
 SETTINGS = DATA_DIR / "settings.json"
+LAST_RUN = DATA_DIR / ".last-run.json"   # the last sort's results, for the replay
 
 
 def load_settings():
     try:
-        return json.loads(SETTINGS.read_text("utf-8"))
+        return json.loads(SETTINGS.read_text("utf-8-sig"))
     except Exception:
         return {}
 
@@ -656,11 +657,27 @@ class State:
         self.landed = []             # [{id, folder, name}] in arrival order
         self.log = []
         self.kind = load_settings().get("kind", "")
-        self.autostart = os.environ.get("SORT_FOOTAGE_AUTOSTART") == "1"  # for recordings: press Sort by itself
         last = load_settings().get("last_folder", "")
         self.folder = last if last and Path(last).is_dir() else (
             str(IPHONE_LIBRARY) if IPHONE_LIBRARY.exists() else "")
         self.last_seen = time.time()
+        # Bring back the last finished sort, so its animation can be replayed (press R).
+        try:
+            saved = json.loads(LAST_RUN.read_text("utf-8"))
+            if saved.get("folder") == self.folder and saved.get("landed") and THUMBS.is_dir():
+                self.items, self.landed = saved["items"], saved["landed"]
+                self.folders, self.phase = saved["folders"], "done"
+        except Exception:
+            pass
+
+    def save_last_run(self):
+        with self.lock:
+            data = {"folder": self.folder, "folders": self.folders,
+                    "items": self.items, "landed": self.landed}
+        try:
+            LAST_RUN.write_text(json.dumps(data, ensure_ascii=False), "utf-8")
+        except OSError:
+            pass
 
     def add_log(self, msg):
         with self.lock:
@@ -668,14 +685,9 @@ class State:
             self.log = self.log[-300:]
 
     def snapshot(self):
-        # For recordings: Claude can start the sort by creating the file "start-now" in the data folder.
-        go = DATA_DIR / "start-now"
-        if go.exists():
-            go.unlink(missing_ok=True)
-            self.go_now = True
         with self.lock:
             return {"busy": self.busy, "phase": self.phase, "run": self.run_id,
-                    "folders": self.folders, "folders_text": self.folders_text, "kind": self.kind, "autostart": self.autostart, "go_now": getattr(self, "go_now", False) and not self.busy,
+                    "folders": self.folders, "folders_text": self.folders_text, "kind": self.kind,
                     "items": self.items, "landed": self.landed,
                     "log": [scrub(line) for line in self.log[-80:]], "folder": folder_label(self.folder),
                     "defaults": DEFAULT_FOLDERS}
@@ -726,7 +738,7 @@ def serve_window(open_app=True, port=0):
         threading.Thread(target=wrapper, daemon=True).start()
         return True
 
-    def do_sort(folder, folders_text, kind="both"):
+    def sort_job(folder, folders_text, kind="both"):
         def on_items(items, folders):
             with st.lock:
                 st.items, st.folders, st.phase = items, folders, "sorting"
@@ -740,10 +752,31 @@ def serve_window(open_app=True, port=0):
                 st.run_id += 1
                 st.items, st.landed = [], []
                 st.folders = parse_folders(folders_text)
-            sort_folder(folder, folders_text, st.add_log, on_items, on_sorted, kind)
-            with st.lock:
-                st.phase = "done" if st.landed else "idle"
-        return background(job)
+            try:
+                sort_folder(folder, folders_text, st.add_log, on_items, on_sorted, kind)
+            finally:
+                with st.lock:
+                    st.phase = "done" if st.landed else "idle"
+                if st.landed:
+                    st.save_last_run()
+        return job
+
+    def do_sort(folder, folders_text, kind="both"):
+        return background(sort_job(folder, folders_text, kind))
+
+    def then_sort(folders_text, kind):
+        """Right after an import: sort the new clips at once, no second press."""
+        folders_text = (folders_text or "").strip()
+        if not folders_text:
+            st.add_log("Clips are in. Type your folders, then press Sort.")
+            return
+        if not find_media(IPHONE_LIBRARY, kind):
+            st.add_log("No new clips to sort.")
+            return
+        st.folder, st.folders_text = str(IPHONE_LIBRARY), folders_text
+        save_settings({"folders": folders_text, "last_folder": st.folder, "kind": kind})
+        st.add_log("Clips are in. Sorting them now...")
+        sort_job(st.folder, folders_text, kind)()
 
     key = secrets.token_urlsafe(32)
     cookie_name = "sortfootage_key"
@@ -806,7 +839,7 @@ def serve_window(open_app=True, port=0):
                     raise ValueError
             except ValueError:
                 return self.send(b"bad request", "text/plain", 400)
-            # The window only shows the folder's name; unless she typed a new path, use the one we hold.
+            # The window only shows the folder's name; unless a new path was typed, use the one we hold.
             folder = (data.get("folder") or "").strip().strip('"') or st.folder
             kind = data.get("kind") if data.get("kind") in KIND_EXT else "both"
             ok, extra = True, {}
@@ -827,20 +860,16 @@ def serve_window(open_app=True, port=0):
                 def job():
                     st.add_log("Looking for the iPhone...")
                     if import_from_iphone(days, kind, st.add_log):
-                        st.folder = str(IPHONE_LIBRARY)
-                        st.add_log("Clips are in. Press Sort.")
+                        then_sort(data.get("folders"), kind)
                 ok = background(job)
             elif self.path == "/icloud":
                 days = int(data.get("days") or 0)
 
                 def job():
                     if import_from_icloud(days, kind, st.add_log):
-                        st.folder = str(IPHONE_LIBRARY)
-                        st.add_log("Ready. Press Sort.")
+                        then_sort(data.get("folders"), kind)
                 ok = background(job)
             elif self.path == "/sort":
-                st.autostart = False
-                st.go_now = False
                 if not folder or not Path(folder).is_dir():
                     st.add_log("Choose the folder with your clips first.")
                     ok = False
@@ -858,6 +887,7 @@ def serve_window(open_app=True, port=0):
                 if folder and Path(folder).is_dir():
                     def job():
                         undo_last(folder, st.add_log)
+                        LAST_RUN.unlink(missing_ok=True)
                         with st.lock:
                             st.items, st.landed, st.phase = [], [], "idle"
                             st.run_id += 1
