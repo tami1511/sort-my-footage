@@ -5,6 +5,9 @@ says what's in it, and puts it in the folders you choose (for example: Beach, Se
 You watch every clip fly into its folder.
 Your photos swirl into a spiral, then fly into their folders. The counters follow the animation until the last photo lands.
 
+**Who it's for:** Windows computers only (it doesn't work on a Mac). It brings photos and videos
+straight from an **iPhone**. Photos from any other phone work too, once they're in a folder on the computer.
+
 **Needs:** Windows 10 or 11, and Claude Code with a paid Claude plan (Pro or higher).
 
 ## Install
