@@ -523,6 +523,8 @@ def unpack_zip(zip_path, log=print):
             name = Path(member.filename).name
             if not name or Path(name).suffix.lower() not in MEDIA_EXT:
                 continue
+            if Path(name).stem.lower() in WINDOWS_RESERVED:   # names like con.jpg are devices on Windows
+                continue
             dest = IPHONE_LIBRARY / name
             if dest.exists():
                 continue

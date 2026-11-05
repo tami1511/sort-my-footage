@@ -1,14 +1,14 @@
 # 🎬 Sort My Footage
 
-You film on your iPhone. On your laptop, Claude looks at every clip, gives it a name that
-says what's in it, and puts it in the folders you choose (for example: Beach, Selfie, B-roll).
-You watch every clip fly into its folder.
-Your photos swirl into a spiral, then fly into their folders. The counters follow the animation until the last photo lands.
+You film on your iPhone. On your Windows laptop, Claude looks at every photo and clip, gives it
+a name that says what's in it, and puts it in the folders you choose (for example: Beach, Selfie,
+B-roll). You watch them swirl into a spiral and then fly into their folders.
 
 **Who it's for:** Windows computers only (it doesn't work on a Mac). It brings photos and videos
 straight from an **iPhone**. Photos from any other phone work too, once they're in a folder on the computer.
 
 **Needs:** Windows 10 or 11, and Claude Code with a paid Claude plan (Pro or higher).
+The tool is free. Sorting uses your own Claude plan.
 
 ## Install
 
@@ -20,7 +20,7 @@ Install Sort My Footage for me from https://github.com/tami1511/sort-my-footage:
 ```
 
 That's it. Claude adds only what's missing (Python, ffmpeg) and puts a
-**Sort My Footage** folder on your Desktop. No keys, no sign-ups, nothing to uninstall.
+**Sort My Footage** folder on your Desktop. No keys and no sign-ups.
 
 **Or by hand, in 3 steps:**
 
@@ -40,9 +40,8 @@ That's it. Claude adds only what's missing (Python, ffmpeg) and puts a
    - **Choose folder** (any folder of clips), then press **Sort**.
 4. After a sort, press **R** to watch the animation again.
 
-A narrow portrait window stacks the pile above the folders for recording. Configure your folders in the normal wide window first.
-
-Classification uses uncropped photo previews and validates photo IDs and folder names before moving files. Uncertain classifications go to Other; review the results rather than treating model confidence as a guarantee.
+Before anything moves, the tool checks every answer from Claude. Photos it isn't sure about go to
+**Other**, so take a quick look at that folder. Claude can make mistakes.
 
 **Undo last sort** puts everything back with the old names.
 **footage-index.md** lists every clip in words, so you can ask Claude "find the clip where...".
@@ -59,10 +58,17 @@ sort-my-footage/          the skill (copied to %USERPROFILE%\.claude\skills\sort
 Install.bat / install.ps1 the installer
 ```
 
+## Remove it
+
+Delete the **Sort My Footage** folder on your Desktop (move your sorted clips out first) and the
+folder `%USERPROFILE%\.claude\skills\sort-my-footage`. Python and ffmpeg stay; remove them in
+Windows Settings > Apps if you don't need them.
+
 ## Privacy
 
 - Your clips stay on your computer.
-- Only small stills from each clip are shown to Claude, through your own Claude account.
+- Claude only sees small preview images, through your own Claude account. It can't open
+  anything else on your computer.
 - Nothing on your iPhone or in iCloud is changed: clips are copied.
 - The tool only sorts. It doesn't post, upload or share anything.
 
